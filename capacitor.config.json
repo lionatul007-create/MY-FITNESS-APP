@@ -1,0 +1,5 @@
+{
+  "appId": "com.yourname.caltrack",
+  "appName": "CalTrack",
+  "webDir": "dist"
+}
