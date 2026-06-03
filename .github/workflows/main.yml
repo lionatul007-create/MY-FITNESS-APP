@@ -1,0 +1,44 @@
+name: Build Mobile APK
+on: [push, workflow_dispatch]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Set up Java JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'zulu'
+
+      - name: Install Project Dependencies
+        run: npm install
+
+      - name: Compile React Web App
+        run: npm run build
+
+      - name: Inject Code into Android Template
+        run: |
+          npx cap change dist
+          npx cap sync android || (npx cap add android && npx cap sync android)
+
+      - name: Build Production Android APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: Upload Finished APK File
+        uses: actions/upload-artifact@v4
+        with:
+          name: CalTrack-App-Installer
+          path: android/app/build/outputs/apk/debug/app-debug.apk
